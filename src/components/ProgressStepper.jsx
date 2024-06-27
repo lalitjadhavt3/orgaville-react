@@ -2,6 +2,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {MicOn} from '../icons';
+import {colors} from '../utils/constants';
 
 const ProgressStepper = ({currentStep}) => {
   const steps = [
@@ -75,10 +76,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeCircle: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.backgroundColor,
   },
   completedCircle: {
-    backgroundColor: '#4CD964',
+    backgroundColor: colors.backgroundColor,
     color: '#fff',
   },
   stepNumber: {
@@ -94,16 +95,17 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   activeStepTitle: {
-    color: '#007AFF',
+    color: colors.secondaryColor,
     fontWeight: 'bold',
   },
   line: {
     flex: 1,
     height: 1,
     backgroundColor: '#e0e0e0',
+    marginBottom: '5%',
   },
   activeLine: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primaryColor,
   },
 });
 

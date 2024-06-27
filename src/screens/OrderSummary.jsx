@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -17,32 +17,61 @@ const windowHeight = Dimensions.get('window').height;
 import {useNavigation} from '@react-navigation/native';
 import DateTimeSlot from '../components/DateTimeSlot';
 import ProgressStepper from '../components/ProgressStepper';
+import GroceryCartItems from '../components/GroceryCartItems';
+import DeliveryLocation from '../components/DeliveryLocation';
+import AddressModal from '../components/AddressModal';
 const OrderSummaryScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const addresses = [
+    'John Doe\n123 Main St, Apt 4B, New York, NY 10001',
+    'Jane Smith\n456 Park Ave, Suite 23, San Francisco, CA 94102',
+    'Michael Johnson\n789 Broadway, Los Angeles, CA 90001',
+    'Emily Davis\n101 Elm St, Boston, MA 02101',
+    'William Brown\n202 Oak St, Chicago, IL 60601',
+  ];
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
   const navigation = useNavigation();
   return (
-    <ScrollView style={styles.screenContainer}>
-      <View style={styles.progressBar}>
-        <ProgressStepper currentStep={2} />
-      </View>
-      <DateTimeSlot />
-    </ScrollView>
+    <View style={{justifyContent: 'center', flex: 1}}>
+      <ScrollView style={styles.screenContainer}>
+        <View style={styles.progressBar}>
+          <ProgressStepper currentStep={2} />
+        </View>
+        <View style={styles.progressBar}>
+          <DeliveryLocation onPress={() => setModalVisible(true)} />
+        </View>
+        <View style={styles.progressBar}>
+          <GroceryCartItems />
+
+          <DateTimeSlot />
+        </View>
+      </ScrollView>
+      <AddressModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        addresses={addresses}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   screenContainer: {
-    paddingTop: Platform.OS === 'android' ? '10%' : 0,
-    backgroundColor: colors.whiteColor,
+    paddingTop: Platform.OS === 'android' ? '3%' : 0,
+    backgroundColor: '#eee',
   },
-  progressBar: {},
-  container: {
-    padding: '5%',
+  progressBar: {
+    paddingVertical: '2%',
+    width: '96%',
+    borderRadius: 10,
     backgroundColor: colors.whiteColor,
-    height: windowHeight,
-    marginTop: '15%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    marginHorizontal: '2%',
+    marginVertical: '1%',
   },
+
   header: {
     flex: 1,
     alignItems: 'center',

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {endPoints} from '../utils/endpoints';
 import api from '../utils/api';
+import {colors} from '../utils/constants';
 
 const DATE_ITEM_WIDTH = 120;
 
@@ -64,7 +65,6 @@ const DateTimeSlot = () => {
       }
       //days.push({date, isAvailable});
     }
-    console.log('🚀 ~ getNext7Days ~ days:', days);
 
     return days;
   };
@@ -84,7 +84,6 @@ const DateTimeSlot = () => {
         responseType: 'json',
       },
     );
-    //console.log('🚀 ~ checkDateAvailability ~ response:', response?.data);
     return response?.data.data.status;
   };
 
@@ -95,18 +94,27 @@ const DateTimeSlot = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // const formatDate = date => {
+  //   const options = {weekday: 'short'};
+  //   const day = date.toLocaleDateString('en-US', options).split(',')[0];
+  //   if (date.getDate() === new Date().getDate() + 1) {
+  //     return `${day},Tomorrow`;
+  //   } else {
+  //     return `${day},${date.getDate()} ${date.toLocaleString('en-US', {
+  //       month: 'short',
+  //     })}`;
+  //   }
+  // };
+
   const formatDate = date => {
     const options = {weekday: 'short'};
     const day = date.toLocaleDateString('en-US', options).split(',')[0];
-    if (date.getDate() === new Date().getDate() + 1) {
-      return `${day},Tomorrow`;
-    } else {
-      return `${day},${date.getDate()} ${date.toLocaleString('en-US', {
-        month: 'short',
-      })}`;
-    }
+    const formattedDate = `${day}\n${date.getDate()} ${date.toLocaleString(
+      'en-US',
+      {month: 'short'},
+    )}`;
+    return formattedDate;
   };
-
   //const days = getNext7Days();
 
   const timeSlots = [
@@ -118,79 +126,88 @@ const DateTimeSlot = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Select Delivery Date</Text>
-      <Animated.ScrollView
-        ref={scrollViewRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.dateContainer}
-        snapToInterval={DATE_ITEM_WIDTH}
-        decelerationRate="fast"
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {x: scrollX}}}],
-          {useNativeDriver: true},
-        )}>
-        {days.map((date, index) => {
-          const inputRange = [
-            (index - 1) * DATE_ITEM_WIDTH,
-            index * DATE_ITEM_WIDTH,
-            (index + 1) * DATE_ITEM_WIDTH,
-          ];
-          const scale = scrollX.interpolate({
-            inputRange,
-            outputRange: [0.8, 1, 0.8],
-            extrapolate: 'clamp',
-          });
-
-          return (
-            <Animated.View
-              key={index}
-              style={[
-                styles.dateBox,
-                {transform: [{scale}]},
-                selectedDate === date.toDateString() && styles.selectedDateBox,
-              ]}>
-              <TouchableOpacity
-                onPress={() => handleDateSelection(date, index)}>
-                <Text
-                  style={[
-                    styles.dateText,
-                    selectedDate === date.toDateString() &&
-                      styles.selectedDateText,
-                  ]}>
-                  {formatDate(date)}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          );
-        })}
-      </Animated.ScrollView>
-      {selectedDate && (
-        <View style={styles.timeSlotContainer}>
-          <Text style={styles.timeSlotTitle}>Select Time Slot</Text>
-          {timeSlots.map((timeSlot, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.radioButton}
-              onPress={() => handleTimeSlotSelection(timeSlot)}>
-              <View style={styles.radioOuterCircle}>
-                {selectedTimeSlot === timeSlot && (
-                  <View style={styles.radioInnerCircle} />
-                )}
-              </View>
-              <Text style={styles.radioText}>{timeSlot}</Text>
-            </TouchableOpacity>
-          ))}
+      {loading ? (
+        <View>
+          <Text>Loading Dates</Text>
         </View>
+      ) : (
+        <>
+          <Animated.ScrollView
+            ref={scrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dateContainer}
+            snapToInterval={DATE_ITEM_WIDTH}
+            decelerationRate="fast"
+            onScroll={Animated.event(
+              [{nativeEvent: {contentOffset: {x: scrollX}}}],
+              {useNativeDriver: true},
+            )}>
+            {days.map((date, index) => {
+              const inputRange = [
+                (index - 1) * DATE_ITEM_WIDTH,
+                index * DATE_ITEM_WIDTH,
+                (index + 1) * DATE_ITEM_WIDTH,
+              ];
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.8, 1, 0.8],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.dateBox,
+                    {transform: [{scale}]},
+                    selectedDate === date.toDateString() &&
+                      styles.selectedDateBox,
+                  ]}>
+                  <TouchableOpacity
+                    onPress={() => handleDateSelection(date, index)}>
+                    <Text
+                      style={[
+                        styles.dateText,
+                        selectedDate === date.toDateString() &&
+                          styles.selectedDateText,
+                      ]}>
+                      {formatDate(date)}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </Animated.ScrollView>
+          {selectedDate && (
+            <View style={styles.timeSlotContainer}>
+              <Text style={styles.timeSlotTitle}>Select Time Slot</Text>
+              {timeSlots.map((timeSlot, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.radioButton}
+                  onPress={() => handleTimeSlotSelection(timeSlot)}>
+                  <View style={styles.radioOuterCircle}>
+                    {selectedTimeSlot === timeSlot && (
+                      <View style={styles.radioInnerCircle} />
+                    )}
+                  </View>
+                  <Text style={styles.radioText}>{timeSlot}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              !isContinueEnabled && styles.disabledButton,
+            ]}
+            onPress={() => {}}
+            disabled={!isContinueEnabled}>
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+        </>
       )}
-      <TouchableOpacity
-        style={[
-          styles.continueButton,
-          !isContinueEnabled && styles.disabledButton,
-        ]}
-        onPress={() => {}}
-        disabled={!isContinueEnabled}>
-        <Text style={styles.continueButtonText}>Continue</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -198,13 +215,14 @@ const DateTimeSlot = () => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
+
+    padding: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 17,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 15,
+    marginHorizontal: '2%',
   },
   dateContainer: {
     paddingLeft: 16,
@@ -221,7 +239,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedDateBox: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primaryColor,
   },
   dateText: {
     fontSize: 16,
@@ -232,14 +250,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   timeSlotContainer: {
-    marginTop: 20,
+    marginTop: 10,
     alignItems: 'flex-start',
     width: '100%',
   },
   timeSlotTitle: {
-    fontSize: 18,
+    fontSize: 17,
     marginBottom: 10,
-    alignSelf: 'center',
+    marginHorizontal: '5%',
+    fontWeight: 'bold',
   },
   radioButton: {
     flexDirection: 'row',
@@ -247,23 +266,24 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   radioOuterCircle: {
-    height: 24,
-    width: 24,
+    height: 18,
+    width: 18,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: colors.primaryColor,
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: '2%',
   },
   radioInnerCircle: {
-    height: 12,
-    width: 12,
+    height: 8,
+    width: 8,
     borderRadius: 6,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primaryColor,
   },
   radioText: {
     marginLeft: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
   continueButton: {
@@ -271,7 +291,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 5,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primaryColor,
   },
   disabledButton: {
     backgroundColor: '#CCCCCC',
