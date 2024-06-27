@@ -110,9 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnStyle: {},
-  screenContainer: {
-    marginTop: '15%',
-  },
+  screenContainer: {},
   avatarsDefaultWithBackdropParent: {
     flexDirection: 'row',
     alignItems: 'center',

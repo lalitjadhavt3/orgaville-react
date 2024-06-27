@@ -32,10 +32,7 @@ const SubCategoriesScreen = ({navigation, route}) => {
   };
   const cartItemQuantity = prod => {
     const cartItem = cartItems.find(item => item.id === prod.id);
-    console.log(
-      '== ~ cartItemQuantity ~ cartItem:',
-      cartItem ? cartItem.quantity : 0,
-    );
+
     return cartItem ? cartItem.quantity : 0;
   };
   const handleAddToCart = product => {
@@ -53,6 +50,18 @@ const SubCategoriesScreen = ({navigation, route}) => {
           quantity: updatedCartItems[existingItemIndex].quantity,
         },
       });
+      Snackbar.show({
+        text: 'Quantity Updated!',
+        duration: Snackbar.LENGTH_SHORT,
+        action: {
+          text: 'Go to Cart',
+          textColor: 'green',
+          backgroundColor: colors.primaryColor,
+          onPress: () => {
+            navigation.navigate('Cart');
+          },
+        },
+      });
     } else {
       // Item does not exist in the cart, add it
 
@@ -66,11 +75,19 @@ const SubCategoriesScreen = ({navigation, route}) => {
       };
 
       dispatch({type: 'ADD_ITEM', payload: newItem});
+      Snackbar.show({
+        text: 'Item Added to Cart!',
+        duration: Snackbar.LENGTH_SHORT,
+        action: {
+          text: 'Go to Cart',
+          textColor: 'green',
+          backgroundColor: colors.primaryColor,
+          onPress: () => {
+            navigation.navigate('Cart');
+          },
+        },
+      });
     }
-    Snackbar.show({
-      text: 'Item added to cart!',
-      duration: Snackbar.LENGTH_SHORT,
-    });
   };
   const decreaseQuantity = product => {
     const existingItemIndex = cartItems.findIndex(
@@ -87,11 +104,19 @@ const SubCategoriesScreen = ({navigation, route}) => {
           quantity: updatedCartItems[existingItemIndex].quantity,
         },
       });
+      Snackbar.show({
+        text: 'Quantity Updated!',
+        duration: Snackbar.LENGTH_SHORT,
+        action: {
+          text: 'Go to Cart',
+          textColor: 'green',
+          backgroundColor: colors.primaryColor,
+          onPress: () => {
+            navigation.navigate('Cart');
+          },
+        },
+      });
     }
-    Snackbar.show({
-      text: 'Quantity Updated!',
-      duration: Snackbar.LENGTH_SHORT,
-    });
   };
   const fetchProducts = async () => {
     try {
@@ -235,13 +260,15 @@ const SubCategoriesScreen = ({navigation, route}) => {
                       <TouchableOpacity
                         style={styles.quantityButton}
                         onPress={() => decreaseQuantity(product)}>
-                        <Text>-</Text>
+                        <Text style={styles.quantityButtonText}>-</Text>
                       </TouchableOpacity>
-                      <Text>{cartItemQuantity(product)}</Text>
+                      <Text style={styles.quantityText}>
+                        {cartItemQuantity(product)}
+                      </Text>
                       <TouchableOpacity
                         style={styles.quantityButton}
                         onPress={() => handleAddToCart(product)}>
-                        <Text>+</Text>
+                        <Text style={styles.quantityButtonText}>+</Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
@@ -378,7 +405,7 @@ const styles = StyleSheet.create({
   addToCartButton: {
     backgroundColor: colors.primaryColor,
     borderRadius: 5,
-    paddingVertical: 8,
+    paddingVertical: '8%',
     alignItems: 'center',
   },
   addToCartButtonText: {
@@ -402,14 +429,25 @@ const styles = StyleSheet.create({
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
     height: 50,
   },
   quantityButton: {
     backgroundColor: colors.primaryColor,
     borderRadius: 5,
-    padding: 5,
-    marginHorizontal: 5,
+    marginHorizontal: '10%',
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+  },
+  quantityButtonText: {
+    fontSize: 25,
+    color: colors.whiteColor,
+  },
+  quantityText: {
+    fontSize: 25,
+    fontWeight: 'bold',
   },
   activityIndicatorContainer: {
     flex: 1,

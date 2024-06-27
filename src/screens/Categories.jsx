@@ -62,7 +62,7 @@ const CategoriesScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   screenContainer: {
     paddingTop: Platform.OS === 'android' ? '10%' : 0,
-    backgroundColor: colors.backgroundColor,
+    backgroundColor: colors.whiteColor,
   },
   container: {
     backgroundColor: colors.whiteColor,
