@@ -12,7 +12,7 @@ import {
 import {colors} from '../utils/constants';
 const windowHeight = Dimensions.get('window').height;
 
-import api, {BASE_URL} from '../utils/api';
+import api, {BASE_URL, getImageUrl} from '../utils/api';
 import {endPoints} from '../utils/endpoints';
 
 const CategoriesScreen = ({navigation}) => {
@@ -46,7 +46,7 @@ const CategoriesScreen = ({navigation}) => {
                   });
                 }}>
                 <Image
-                  source={{uri: `${BASE_URL}/public${category.cat_image_name}`}}
+                  source={{uri: getImageUrl(category.cat_image_name)}}
                   style={styles.categoryImage}
                 />
                 <Text style={styles.catName}>{category.cat_name}</Text>
@@ -62,7 +62,7 @@ const CategoriesScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   screenContainer: {
     paddingTop: Platform.OS === 'android' ? '10%' : 0,
-    backgroundColor: colors.backgroundColor,
+    backgroundColor: colors.whiteColor,
   },
   container: {
     backgroundColor: colors.whiteColor,

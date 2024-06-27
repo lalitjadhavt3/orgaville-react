@@ -16,7 +16,7 @@ import {
 import {Person, Cart} from '../assets/icons';
 import {colors} from '../utils/constants';
 import Carousel from 'react-native-reanimated-carousel';
-import api, {BASE_URL} from '../utils/api';
+import api, {getImageUrl} from '../utils/api';
 import {endPoints} from '../utils/endpoints';
 const width = Dimensions.get('window').width;
 
@@ -85,7 +85,7 @@ const HomeScreen = ({navigation}) => {
               }}>
               <Image
                 style={{width: '95%', height: '90%', borderRadius: 10}}
-                source={{uri: `${BASE_URL}/public${item.image_name}`}}
+                source={{uri: getImageUrl(item.image_name)}}
               />
             </View>
           )}
