@@ -69,16 +69,16 @@ const cartReducer = (state, action) => {
       } else {
         newCartItems = [...state.cartItems, {...action.payload, quantity: 1}];
       }
+      const newCartTotal = calculateTotal(newCartItems);
+      const newDiscount = calculateDiscount(newCartItems);
+      const newCartTotalItems = calculateTotalItems(newCartItems);
       return {
         ...state,
         cartItems: newCartItems,
-        cartTotal: calculateTotal(newCartItems),
-        discount: calculateDiscount(newCartItems),
-        finalTotal: calculateFinalTotal(
-          calculateTotal(newCartItems),
-          calculateDiscount(newCartItems),
-        ),
-        cartTotalItems: calculateTotalItems(newCartItems),
+        cartTotal: newCartTotal,
+        discount: newDiscount,
+        finalTotal: calculateFinalTotal(newCartTotal, newDiscount),
+        cartTotalItems: newCartTotalItems,
       };
     case 'REMOVE_ITEM':
       const updatedCartItems = state.cartItems.filter(
@@ -88,16 +88,16 @@ const cartReducer = (state, action) => {
             item.unitId === action.payload.unitId
           ),
       );
+      const updatedCartTotal = calculateTotal(updatedCartItems);
+      const updatedDiscount = calculateDiscount(updatedCartItems);
+      const updatedCartTotalItems = calculateTotalItems(updatedCartItems);
       return {
         ...state,
         cartItems: updatedCartItems,
-        cartTotal: calculateTotal(updatedCartItems),
-        discount: calculateDiscount(updatedCartItems),
-        finalTotal: calculateFinalTotal(
-          calculateTotal(updatedCartItems),
-          calculateDiscount(updatedCartItems),
-        ),
-        cartTotalItems: calculateTotalItems(updatedCartItems),
+        cartTotal: updatedCartTotal,
+        discount: updatedDiscount,
+        finalTotal: calculateFinalTotal(updatedCartTotal, updatedDiscount),
+        cartTotalItems: updatedCartTotalItems,
       };
     case 'UPDATE_QUANTITY':
       const updatedItems = state.cartItems.map(item =>
@@ -105,16 +105,16 @@ const cartReducer = (state, action) => {
           ? {...item, quantity: action.payload.quantity}
           : item,
       );
+      const updatedTotal = calculateTotal(updatedItems);
+      const updatedDiscount2 = calculateDiscount(updatedItems);
+      const updatedCartTotalItems2 = calculateTotalItems(updatedItems);
       return {
         ...state,
         cartItems: updatedItems,
-        cartTotal: calculateTotal(updatedItems),
-        discount: calculateDiscount(updatedItems),
-        finalTotal: calculateFinalTotal(
-          calculateTotal(updatedItems),
-          calculateDiscount(updatedItems),
-        ),
-        cartTotalItems: calculateTotalItems(updatedItems),
+        cartTotal: updatedTotal,
+        discount: updatedDiscount2,
+        finalTotal: calculateFinalTotal(updatedTotal, updatedDiscount2),
+        cartTotalItems: updatedCartTotalItems2,
       };
     default:
       return state;

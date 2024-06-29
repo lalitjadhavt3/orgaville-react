@@ -57,19 +57,9 @@ const StackNavigator = () => {
             options={{headerShown: true}}
           />
           <Stack.Screen
-            name="Orders"
-            component={Orders}
-            options={{headerShown: true}}
-          />
-          <Stack.Screen
             name="Payment"
             component={PaymentScreen}
             options={{headerShown: true, headerTitle: 'Payment'}}
-          />
-          <Stack.Screen
-            name="OrderSuccess"
-            component={OrderSuccessScreen}
-            options={{headerShown: false}}
           />
           <Stack.Screen
             name="subCategory"

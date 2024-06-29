@@ -1,4 +1,3 @@
-// Captcha.js
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -48,7 +47,7 @@ const Captcha = ({onVerify}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.question}>
-        {num1} {operator} {num2} =
+        {num1} {operator} {num2} = ?
       </Text>
       <TextInput
         style={styles.input}
@@ -65,7 +64,7 @@ const Captcha = ({onVerify}) => {
           width="24"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="black"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round">
@@ -81,9 +80,8 @@ const Captcha = ({onVerify}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'space-around',
     margin: 10,
   },
   question: {
@@ -96,7 +94,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     width: 100,
-    textAlign: 'left',
+    textAlign: 'center',
     marginBottom: 10,
   },
   verifyButton: {
