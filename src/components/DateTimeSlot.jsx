@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useContext} from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,12 @@ import {
 import {endPoints} from '../utils/endpoints';
 import api from '../utils/api';
 import {colors} from '../utils/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {CartContext} from '../context/Context';
 
 const DATE_ITEM_WIDTH = 120;
 
-const DateTimeSlot = () => {
+const DateTimeSlot = ({navigation}) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [isContinueEnabled, setIsContinueEnabled] = useState(false);
@@ -21,6 +23,8 @@ const DateTimeSlot = () => {
   const [loading, setLoading] = useState(true);
   const scrollViewRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const {state, dispatch} = useContext(CartContext);
+  const {cartTotal, discount, finalTotal, cartTotalItems} = state;
   useEffect(() => {
     fetchAvailableDays();
   }, []);
@@ -115,6 +119,42 @@ const DateTimeSlot = () => {
     )}`;
     return formattedDate;
   };
+  function getISTcurrentTime() {
+    // Get the current date and time
+    const now = new Date();
+
+    // Adjust for IST timezone (GMT+05:30)
+    now.setHours(now.getHours() + 5 + (now.getMinutes() >= 30 ? 1 : 0));
+
+    // Format the date and time
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Pad month with 0
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+
+    return `${year}${month}${day}${hours}${minutes}${seconds}`;
+  }
+  function getISTcurrentDateTime() {
+    // Get the current date and time
+    const now = new Date();
+
+    // Adjust for IST timezone (GMT+05:30)
+    now.setHours(now.getHours() + 5 + (now.getMinutes() >= 30 ? 1 : 0));
+
+    // Format the date and time
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Pad month with 0
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day},${hours}:${minutes}:${seconds}`;
+  }
+
+  // Example usage
   //const days = getNext7Days();
 
   const timeSlots = [
@@ -122,6 +162,31 @@ const DateTimeSlot = () => {
     '11:00 am to 3:00 pm',
     '3:00 pm to 7:00 pm',
   ];
+  const proceedToPayment = async () => {
+    //const userData = await AsyncStorage.getItem('user_data');
+    const userData = {
+      user_id: 13,
+      name: 'mangesh nawale',
+      email: 'meettomangesh@gmail.com',
+      mobile_number: '9730872969',
+    };
+    const orderId = 'ORD' + getISTcurrentTime() + userData?.user_id;
+    const orderData = {
+      user_id: userData?.user_id,
+      user_mobile: userData?.mobile_number,
+      orderData: {
+        order_id: orderId,
+        order_date: getISTcurrentDateTime().split(',')[0],
+        order_time: getISTcurrentDateTime().split(',')[1],
+        order_status: 'pending',
+        order_total: finalTotal,
+        order_items: cartTotalItems,
+        order_subtotal: cartTotal,
+      },
+    };
+    console.log('🚀 ~ proceedToPayment ~ orderData:', state);
+    navigation.navigate('Payment');
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -202,7 +267,7 @@ const DateTimeSlot = () => {
               styles.continueButton,
               !isContinueEnabled && styles.disabledButton,
             ]}
-            onPress={() => {}}
+            onPress={proceedToPayment}
             disabled={!isContinueEnabled}>
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
