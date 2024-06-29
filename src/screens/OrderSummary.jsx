@@ -1,17 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  Image,
-  StyleSheet,
-  KeyboardAvoidingView,
-  ScrollView,
-  Dimensions,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import React, {useState} from 'react';
+import {View, StyleSheet, ScrollView, Dimensions, Platform} from 'react-native';
 import {colors} from '../utils/constants';
 const windowHeight = Dimensions.get('window').height;
 import {useNavigation} from '@react-navigation/native';
@@ -46,7 +34,7 @@ const OrderSummaryScreen = () => {
         <View style={styles.progressBar}>
           <GroceryCartItems />
 
-          <DateTimeSlot />
+          <DateTimeSlot navigation={navigation} />
         </View>
       </ScrollView>
       <AddressModal
