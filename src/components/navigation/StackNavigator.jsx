@@ -14,6 +14,8 @@ import SubCategoriesScreen from '../../screens/SubCategoriesScreen';
 import OrderSummaryScreen from '../../screens/OrderSummary';
 import Orders from '../../screens/Orders';
 import OrderDetails from '../../screens/OrderDetails';
+import PaymentScreen from '../../screens/PaymentScreen';
+import OrderSuccessScreen from '../../screens/OrderSuccess';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -58,6 +60,16 @@ const StackNavigator = () => {
             name="Orders"
             component={Orders}
             options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="Payment"
+            component={PaymentScreen}
+            options={{headerShown: true, headerTitle: 'Payment'}}
+          />
+          <Stack.Screen
+            name="OrderSuccess"
+            component={OrderSuccessScreen}
+            options={{headerShown: false}}
           />
           <Stack.Screen
             name="subCategory"

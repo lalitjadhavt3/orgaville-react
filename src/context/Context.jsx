@@ -1,9 +1,10 @@
-import React, {createContext, useReducer, useState} from 'react';
+import React, {createContext, useReducer, useEffect, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
   cartItems: [],
   cartTotal: 0,
-  cartTotalItems: 0, // Added total cart items
+  cartTotalItems: 0,
   discount: 0,
   finalTotal: 0,
 };
@@ -40,50 +41,80 @@ const calculateTotalItems = cartItems => {
 
 const cartReducer = (state, action) => {
   switch (action.type) {
+    case 'SET_CART':
+      return {
+        ...state,
+        cartItems: action.payload,
+        cartTotal: calculateTotal(action.payload),
+        discount: calculateDiscount(action.payload),
+        finalTotal: calculateFinalTotal(
+          calculateTotal(action.payload),
+          calculateDiscount(action.payload),
+        ),
+        cartTotalItems: calculateTotalItems(action.payload),
+      };
     case 'ADD_ITEM':
-      const newCartItems = [...state.cartItems, action.payload];
-      const newCartTotal = calculateTotal(newCartItems);
-      const newDiscount = calculateDiscount(newCartItems);
-      const newCartTotalItems = calculateTotalItems(newCartItems); // Calculate total items
+      const existingItemIndex = state.cartItems.findIndex(
+        item =>
+          item.id === action.payload.id &&
+          item.unitId === action.payload.unitId,
+      );
+      let newCartItems;
+      if (existingItemIndex !== -1) {
+        newCartItems = state.cartItems.map((item, index) =>
+          index === existingItemIndex
+            ? {...item, quantity: item.quantity + 1}
+            : item,
+        );
+      } else {
+        newCartItems = [...state.cartItems, {...action.payload, quantity: 1}];
+      }
       return {
         ...state,
         cartItems: newCartItems,
-        cartTotal: newCartTotal,
-        discount: newDiscount,
-        finalTotal: calculateFinalTotal(newCartTotal, newDiscount),
-        cartTotalItems: newCartTotalItems, // Update total items
+        cartTotal: calculateTotal(newCartItems),
+        discount: calculateDiscount(newCartItems),
+        finalTotal: calculateFinalTotal(
+          calculateTotal(newCartItems),
+          calculateDiscount(newCartItems),
+        ),
+        cartTotalItems: calculateTotalItems(newCartItems),
       };
     case 'REMOVE_ITEM':
       const updatedCartItems = state.cartItems.filter(
-        item => item.id !== action.payload.id,
+        item =>
+          !(
+            item.id === action.payload.id &&
+            item.unitId === action.payload.unitId
+          ),
       );
-      const updatedCartTotal = calculateTotal(updatedCartItems);
-      const updatedDiscount1 = calculateDiscount(updatedCartItems);
-      const updatedCartTotalItems1 = calculateTotalItems(updatedCartItems); // Calculate total items
       return {
         ...state,
         cartItems: updatedCartItems,
-        cartTotal: updatedCartTotal,
-        discount: updatedDiscount1,
-        finalTotal: calculateFinalTotal(updatedCartTotal, updatedDiscount1),
-        cartTotalItems: updatedCartTotalItems1, // Update total items
+        cartTotal: calculateTotal(updatedCartItems),
+        discount: calculateDiscount(updatedCartItems),
+        finalTotal: calculateFinalTotal(
+          calculateTotal(updatedCartItems),
+          calculateDiscount(updatedCartItems),
+        ),
+        cartTotalItems: calculateTotalItems(updatedCartItems),
       };
     case 'UPDATE_QUANTITY':
       const updatedItems = state.cartItems.map(item =>
-        item.id === action.payload.id
+        item.id === action.payload.id && item.unitId === action.payload.unitId
           ? {...item, quantity: action.payload.quantity}
           : item,
       );
-      const updatedTotal = calculateTotal(updatedItems);
-      const updatedDiscount = calculateDiscount(updatedItems);
-      const updatedCartTotalItems2 = calculateTotalItems(updatedItems); // Calculate total items
       return {
         ...state,
         cartItems: updatedItems,
-        cartTotal: updatedTotal,
-        discount: updatedDiscount,
-        finalTotal: calculateFinalTotal(updatedTotal, updatedDiscount),
-        cartTotalItems: updatedCartTotalItems2, // Update total items
+        cartTotal: calculateTotal(updatedItems),
+        discount: calculateDiscount(updatedItems),
+        finalTotal: calculateFinalTotal(
+          calculateTotal(updatedItems),
+          calculateDiscount(updatedItems),
+        ),
+        cartTotalItems: calculateTotalItems(updatedItems),
       };
     default:
       return state;
@@ -93,6 +124,76 @@ const cartReducer = (state, action) => {
 export const ContextProvider = ({children}) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const [selectedSubCat, setSelectedSubCat] = useState();
+  const userId = 13; // Temporary user ID
+
+  const saveCartToStorage = async cart => {
+    try {
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error('Failed to save cart to storage:', e);
+    }
+  };
+
+  const loadCartFromStorage = async () => {
+    try {
+      const cart = await AsyncStorage.getItem('cart');
+      return cart ? JSON.parse(cart) : [];
+    } catch (e) {
+      console.error('Failed to load cart from storage:', e);
+      return [];
+    }
+  };
+
+  const fetchCartFromServer = async () => {
+    try {
+      const response = await fetch(`https://yourapi.com/api/cart/${userId}`);
+      const data = await response.json();
+      return data.cartItems || [];
+    } catch (e) {
+      console.error('Failed to fetch cart from server:', e);
+      return [];
+    }
+  };
+
+  const syncCartWithServer = async cartItems => {
+    try {
+      await fetch(`https://yourapi.com/api/cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          cartItems,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to sync cart with server:', e);
+    }
+  };
+
+  const initializeCart = async () => {
+    const localCart = await loadCartFromStorage();
+    if (localCart.length > 0) {
+      dispatch({type: 'SET_CART', payload: localCart});
+    } else {
+      const serverCart = await fetchCartFromServer();
+      dispatch({type: 'SET_CART', payload: serverCart});
+      saveCartToStorage(serverCart);
+    }
+  };
+
+  useEffect(() => {
+    initializeCart();
+  }, []);
+
+  useEffect(() => {
+    if (state.cartItems.length > 0) {
+      saveCartToStorage(state.cartItems);
+      syncCartWithServer(state.cartItems);
+    }
+  }, [state.cartItems]);
+
   return (
     <CartContext.Provider
       value={{state, dispatch, setSelectedSubCat, selectedSubCat}}>

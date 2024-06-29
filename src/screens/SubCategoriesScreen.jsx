@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import Snackbar from 'react-native-snackbar';
 import FastImage from 'react-native-fast-image';
 import {CartContext} from '../context/Context';
 import SelectDropdown from 'react-native-select-dropdown';
+import {MicOff, MicOn} from '../icons';
+
 const SubCategoriesScreen = ({navigation, route}) => {
   const {category_id} = route.params;
   const {state, dispatch} = useContext(CartContext);
@@ -26,27 +28,42 @@ const SubCategoriesScreen = ({navigation, route}) => {
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedVariants, setSelectedVariants] = useState({});
+
   const handleSubCategoryPress = subCategory => {
     setSelectedSubCat(subCategory);
   };
-  const cartItemQuantity = prod => {
-    const cartItem = cartItems.find(item => item.id === prod.id);
-
+  const truncateProductName = name => {
+    if (name.includes('/')) {
+      const [english, marathi] = name.split('/').map(part => part.trim());
+      const truncatedEnglish =
+        english.length > 10 ? english.slice(0, 10) + '...' : english;
+      const truncatedMarathi =
+        marathi.length > 10 ? marathi.slice(0, 10) + '...' : marathi;
+      return `${truncatedEnglish} / ${truncatedMarathi}`;
+    } else {
+      return name.length > 20 ? name.slice(0, 20) + '...' : name;
+    }
+  };
+  const cartItemQuantity = (prod, unitId) => {
+    const cartItem = cartItems.find(
+      item => item.id === prod.id && item.unitId === unitId,
+    );
     return cartItem ? cartItem.quantity : 0;
   };
-  const handleAddToCart = product => {
+
+  const handleAddToCart = (product, unit) => {
     const existingItemIndex = cartItems.findIndex(
-      item => item.id === product.id,
+      item => item.id === product.id && item.unitId === unit.id,
     );
     if (existingItemIndex !== -1) {
-      // Item already exists in the cart, update its quantity
       const updatedCartItems = [...cartItems];
       updatedCartItems[existingItemIndex].quantity++;
       dispatch({
         type: 'UPDATE_QUANTITY',
         payload: {
           id: product.id,
+          unitId: unit.id,
           quantity: updatedCartItems[existingItemIndex].quantity,
         },
       });
@@ -63,17 +80,16 @@ const SubCategoriesScreen = ({navigation, route}) => {
         },
       });
     } else {
-      // Item does not exist in the cart, add it
-
       const newItem = {
-        id: product?.id,
-        title: product?.product_name,
-        discountedPrice: parseFloat(product?.product_units[0]?.selling_price),
-        price: parseFloat(product?.product_units[0]?.selling_price),
+        id: product.id,
+        unitId: unit.id,
+        title: product.product_name,
+        variant: unit.unit,
+        discountedPrice: parseFloat(unit.selling_price),
+        price: parseFloat(unit.selling_price),
         quantity: 1,
         image: getImageUrl(product.product_images[0]?.image_name),
       };
-
       dispatch({type: 'ADD_ITEM', payload: newItem});
       Snackbar.show({
         text: 'Item Added to Cart!',
@@ -89,18 +105,19 @@ const SubCategoriesScreen = ({navigation, route}) => {
       });
     }
   };
-  const decreaseQuantity = product => {
+
+  const decreaseQuantity = (product, unit) => {
     const existingItemIndex = cartItems.findIndex(
-      item => item.id === product.id,
+      item => item.id === product.id && item.unitId === unit.id,
     );
     if (existingItemIndex !== -1) {
-      // Item already exists in the cart, update its quantity
       const updatedCartItems = [...cartItems];
       updatedCartItems[existingItemIndex].quantity--;
       dispatch({
         type: 'UPDATE_QUANTITY',
         payload: {
           id: product.id,
+          unitId: unit.id,
           quantity: updatedCartItems[existingItemIndex].quantity,
         },
       });
@@ -118,13 +135,14 @@ const SubCategoriesScreen = ({navigation, route}) => {
       });
     }
   };
+
   const fetchProducts = async () => {
     try {
       const data = {
         platform: 'android',
         category_id: category_id,
-        no_of_records: 5, //doesn't matter for now
-        page_number: 1, //doesn't matter for now
+        no_of_records: 5,
+        page_number: 1,
       };
       const responseProducts = await api.post(endPoints.PRODUCTS, data, {
         responseType: 'json',
@@ -133,9 +151,10 @@ const SubCategoriesScreen = ({navigation, route}) => {
     } catch (error) {
       handleApiError(error);
     } finally {
-      setLoading(false); // Set loading to false whether the request succeeds or fails
+      setLoading(false);
     }
   };
+
   const getSubCats = async () => {
     try {
       const data = {
@@ -148,24 +167,31 @@ const SubCategoriesScreen = ({navigation, route}) => {
       handleApiError(error);
     }
   };
+
   useEffect(() => {
     getSubCats();
     fetchProducts();
   }, []);
+
   const handleApiError = error => {
     if (error.response && error.response.status === 429) {
-      // If error status is 429 (Too Many Requests), show a Snackbar with a message
       Snackbar.show({
         text: 'Too many requests. Please try again later.',
         duration: Snackbar.LENGTH_LONG,
       });
     } else {
-      // For other errors, show a general error message
       Snackbar.show({
         text: `An error occurred. ${error}.`,
         duration: Snackbar.LENGTH_LONG,
       });
     }
+  };
+
+  const handleVariantChange = (product, unit) => {
+    setSelectedVariants({
+      ...selectedVariants,
+      [product.id]: unit,
+    });
   };
 
   useEffect(() => {
@@ -197,7 +223,7 @@ const SubCategoriesScreen = ({navigation, route}) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      {loading ? ( // Display activity indicator if loading is true
+      {loading ? (
         <View style={styles.activityIndicatorContainer}>
           <ActivityIndicator size="large" color={colors.primaryColor} />
         </View>
@@ -209,80 +235,108 @@ const SubCategoriesScreen = ({navigation, route}) => {
                 ? categoryProducts?.category_id === selectedSubCat.id
                 : true,
             )
-            .map((product, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.productCard}
-                onPress={() => {
-                  /* handle product press */
-                }}>
-                {/* Product Image Slider */}
-
-                {product?.product_images ? (
-                  product.product_images.map((image, index) => {
-                    return (
-                      <FastImage
-                        key={index}
-                        style={{width: '95%', height: 200}}
-                        source={{
-                          uri: getImageUrl(image.image_name),
-                          priority: FastImage.priority.normal,
-                        }}
-                        resizeMode={FastImage.resizeMode.contain}
-                      />
-                    );
-                  })
-                ) : (
-                  <View style={styles.noImageAvailable}>
-                    <Text>No image available.</Text>
-                  </View>
-                )}
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.product_name}</Text>
-                  <View style={styles.variantPicker}>
-                    {/* <Picker
-                      selectedValue={selectedVariant}
-                      onValueChange={(itemValue, itemIndex) =>
-                        setSelectedVariant(itemValue)
-                      }>
-                      {product.product_units.map((variant, index) => (
-                        <Picker.Item
+            .map((product, index) => {
+              const selectedVariant =
+                selectedVariants[product.id] || product.product_units[0];
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.productCard}
+                  onPress={() => {
+                    /* handle product press */
+                  }}>
+                  {product?.product_images ? (
+                    product.product_images.map((image, index) => {
+                      return (
+                        <FastImage
                           key={index}
-                          label={variant.unit}
-                          value={variant}
+                          style={{width: '95%', height: 200}}
+                          source={{
+                            uri: getImageUrl(image.image_name),
+                            priority: FastImage.priority.normal,
+                          }}
+                          resizeMode={FastImage.resizeMode.contain}
                         />
-                      ))}
-                    </Picker> */}
-                  </View>
-
-                  {cartItemQuantity(product) > 0 ? (
-                    <View style={styles.quantityContainer}>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => decreaseQuantity(product)}>
-                        <Text style={styles.quantityButtonText}>-</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.quantityText}>
-                        {cartItemQuantity(product)}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => handleAddToCart(product)}>
-                        <Text style={styles.quantityButtonText}>+</Text>
-                      </TouchableOpacity>
-                    </View>
+                      );
+                    })
                   ) : (
-                    <TouchableOpacity
-                      style={styles.addToCartButton}
-                      onPress={() => handleAddToCart(product)}>
-                      <Text style={styles.addToCartButtonText}>
-                        Add to Cart
-                      </Text>
-                    </TouchableOpacity>
+                    <View style={styles.noImageAvailable}>
+                      <Text>No image available.</Text>
+                    </View>
                   )}
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>
+                      {truncateProductName(product.product_name)}
+                      {/* {product.product_name} */}
+                    </Text>
+                    {product.product_units.length > 1 ? (
+                      <SelectDropdown
+                        data={product.product_units}
+                        onSelect={(selectedItem, index) =>
+                          handleVariantChange(product, selectedItem)
+                        }
+                        buttonTextAfterSelection={(selectedItem, index) => {
+                          return selectedItem.unit;
+                        }}
+                        rowTextForSelection={(item, index) => {
+                          return item.unit;
+                        }}
+                        defaultButtonText={selectedVariant.unit}
+                        buttonStyle={styles.dropdownButton}
+                        buttonTextStyle={styles.dropdownButtonText}
+                        dropdownStyle={styles.dropdown}
+                        rowStyle={styles.dropdownRow}
+                        rowTextStyle={styles.dropdownRowText}
+                        renderDropdownIcon={isOpened => {
+                          isOpened ? '>' : '<';
+                        }}
+                        //dropdownIconPosition={'right'}
+                      />
+                    ) : (
+                      <View style={styles.noVariantTextContainer}>
+                        <Text style={styles.noVariantTextTitle}>
+                          {product.product_units[0].unit}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.productPrice}>
+                      Price: ₹ {selectedVariant.selling_price}
+                    </Text>
+                    {cartItemQuantity(product, selectedVariant.id) > 0 ? (
+                      <View style={styles.quantityContainer}>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() =>
+                            decreaseQuantity(product, selectedVariant)
+                          }>
+                          <Text style={styles.quantityButtonText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>
+                          {cartItemQuantity(product, selectedVariant.id)}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() =>
+                            handleAddToCart(product, selectedVariant)
+                          }>
+                          <Text style={styles.quantityButtonText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.addToCartButton}
+                        onPress={() =>
+                          handleAddToCart(product, selectedVariant)
+                        }>
+                        <Text style={styles.addToCartButtonText}>
+                          Add to Cart
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
         </View>
       )}
     </ScrollView>
@@ -328,7 +382,7 @@ const styles = StyleSheet.create({
   },
   categoryImage: {
     width: '90%',
-    aspectRatio: 1, // Ensure the image keeps its original aspect ratio
+    aspectRatio: 1,
     borderRadius: 10,
     marginBottom: 5,
   },
@@ -353,9 +407,9 @@ const styles = StyleSheet.create({
     color: colors.whiteColor,
   },
   categoryImage: {
-    width: 30, // Adjust as needed
-    height: 30, // Adjust as needed
-    borderRadius: 15, // To make it circular
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
   productContainer: {
     marginTop: 20,
@@ -365,7 +419,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 10,
   },
-
   subCategoryText: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -373,13 +426,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   productCard: {
-    width: '48%', // Adjust as needed to fit 2 cards per row
+    width: '48%',
     backgroundColor: colors.lightGray,
     borderRadius: 10,
     marginBottom: 20,
   },
   imageSliderContainer: {
-    height: 150, // Adjust the height of the image slider
+    height: 150,
     overflow: 'hidden',
     borderRadius: 10,
     width: '49%',
@@ -393,7 +446,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 5,
   },
@@ -425,11 +478,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
   },
-
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50,
+    height: 30,
   },
   quantityButton: {
     backgroundColor: colors.primaryColor,
@@ -453,6 +505,60 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  noImageAvailable: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
+    width: '95%',
+  },
+  dropdownButton: {
+    width: '100%',
+    height: 30,
+    backgroundColor: '#FFF',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  dropdownButtonText: {
+    color: '#444',
+    textAlign: 'left',
+    fontSize: 14,
+  },
+  noVariantTextContainer: {
+    width: '100%',
+    height: 30,
+    backgroundColor: 'lightgrey',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noVariantTextTitle: {
+    color: '#444',
+    textAlign: 'left',
+    fontSize: 14,
+  },
+
+  dropdown: {
+    backgroundColor: '#EFEFEF',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#444',
+    marginTop: -60, // Adjust this to fine-tune the vertical position
+  },
+  dropdownRow: {
+    backgroundColor: '#EFEFEF',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#C5C5C5',
+  },
+  dropdownRowText: {
+    color: '#444',
+    textAlign: 'left',
+    fontSize: 14,
   },
 });
 
