@@ -21,6 +21,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const Cart = ({navigation, route}) => {
   const {state, dispatch} = useContext(CartContext);
+  console.log('🚀 ~ state:', state);
   const {cartTotal, discount, finalTotal, cartTotalItems} = state;
 
   const removeItem = item => {
@@ -60,13 +61,29 @@ const Cart = ({navigation, route}) => {
     setModalVisible(false);
   };
   const updateQuantity = (item, quantity) => {
-    dispatch({type: 'UPDATE_QUANTITY', payload: {id: item.id, quantity}});
+    dispatch({
+      type: 'UPDATE_QUANTITY',
+      payload: {id: item.id, unitId: item.unitId, quantity},
+    });
   };
   const goToCheckout = async () => {
     //if (loggedIn) {
     if (1) {
       navigation.navigate('OrderSummary');
     }
+  };
+  const getProductDetails = (id, unitId) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      const unit = product.product_units.find(u => u.id === unitId);
+      return {
+        productName: product.product_name,
+        unit: unit.unit,
+        price: parseFloat(unit.selling_price),
+        discountedPrice: parseFloat(unit.special_price),
+      };
+    }
+    return {};
   };
   return (
     <View style={styles.container}>
@@ -76,62 +93,68 @@ const Cart = ({navigation, route}) => {
             <DeliveryLocation onPress={() => setModalVisible(true)} />
           </View>
           <ScrollView style={{height: 200, backgroundColor: 'white'}}>
-            {state?.cartItems?.map(item => (
-              <View key={item.id} style={styles.itemContainer}>
-                <View style={styles.itemRow}>
-                  <View style={styles.itemImageContainer}>
-                    <Image source={{uri: item.image}} style={styles.image} />
-                  </View>
-                  <View style={styles.itemDetails}>
-                    <Text style={styles.itemName}>{item.title}</Text>
-                    <Text style={styles.itemVariant}>1kg</Text>
-                    <View style={styles.quantityPriceContainer}>
-                      <View style={styles.quantityContainer}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            updateQuantity(item, item.quantity - 1);
-                          }}
-                          style={[
-                            item.quantity <= 1
-                              ? styles.disabledButton
-                              : styles.buttonCart,
-                          ]}
-                          disabled={item.quantity <= 1}>
-                          <Text
+            {state?.cartItems?.map(item => {
+              return (
+                <View
+                  key={`${item.id}-${item.unitId}`}
+                  style={styles.itemContainer}>
+                  <View style={styles.itemRow}>
+                    <View style={styles.itemImageContainer}>
+                      <Image source={{uri: item.image}} style={styles.image} />
+                    </View>
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName}>{item.title}</Text>
+                      <Text style={styles.itemVariant}>{item.variant}</Text>
+                      <View style={styles.quantityPriceContainer}>
+                        <View style={styles.quantityContainer}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              updateQuantity(item, item.quantity - 1);
+                            }}
                             style={[
                               item.quantity <= 1
-                                ? styles.disabledButtonText
-                                : styles.buttonText,
-                            ]}>
-                            -
+                                ? styles.disabledButton
+                                : styles.buttonCart,
+                            ]}
+                            disabled={item.quantity <= 1}>
+                            <Text
+                              style={[
+                                item.quantity <= 1
+                                  ? styles.disabledButtonText
+                                  : styles.buttonText,
+                              ]}>
+                              -
+                            </Text>
+                          </TouchableOpacity>
+                          <Text style={styles.quantityText}>
+                            {item.quantity}
                           </Text>
-                        </TouchableOpacity>
-                        <Text style={styles.quantityText}>{item.quantity}</Text>
-                        <TouchableOpacity
-                          onPress={() => {
-                            updateQuantity(item, item.quantity + 1);
-                          }}
-                          style={styles.buttonCart}>
-                          <Text style={styles.buttonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={styles.quantityContainer}>
-                        <Text style={styles.price}>
-                          ₹ {item.discountedPrice}
-                        </Text>
+                          <TouchableOpacity
+                            onPress={() => {
+                              updateQuantity(item, item.quantity + 1);
+                            }}
+                            style={styles.buttonCart}>
+                            <Text style={styles.buttonText}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={styles.quantityContainer}>
+                          <Text style={styles.price}>
+                            ₹ {item.discountedPrice}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <View style={styles.buttonContainer}>
-                    <Button
-                      color={colors.secondaryColor}
-                      title="X"
-                      onPress={() => removeItem(item)}
-                    />
+                    <View style={styles.buttonContainer}>
+                      <Button
+                        color={colors.secondaryColor}
+                        title="X"
+                        onPress={() => removeItem(item)}
+                      />
+                    </View>
                   </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
 
             <View style={styles.footerContainer}>
               <Text style={styles.totalName}>Cart Total</Text>
@@ -357,7 +380,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginHorizontal: '10%',
     fontWeight: 'bold',
-    color: colors.blackColor,
   },
   itemDecrease: {
     flexDirection: 'column',

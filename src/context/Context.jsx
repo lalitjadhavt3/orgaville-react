@@ -3,7 +3,7 @@ import React, {createContext, useReducer, useState} from 'react';
 const initialState = {
   cartItems: [],
   cartTotal: 0,
-  cartTotalItems: 0, // Added total cart items
+  cartTotalItems: 0,
   discount: 0,
   finalTotal: 0,
 };
@@ -41,49 +41,67 @@ const calculateTotalItems = cartItems => {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ITEM':
-      const newCartItems = [...state.cartItems, action.payload];
+      const existingItemIndex = state.cartItems.findIndex(
+        item =>
+          item.id === action.payload.id &&
+          item.unitId === action.payload.unitId,
+      );
+      let newCartItems;
+      if (existingItemIndex !== -1) {
+        newCartItems = state.cartItems.map((item, index) =>
+          index === existingItemIndex
+            ? {...item, quantity: item.quantity + 1}
+            : item,
+        );
+      } else {
+        newCartItems = [...state.cartItems, {...action.payload, quantity: 1}];
+      }
       const newCartTotal = calculateTotal(newCartItems);
       const newDiscount = calculateDiscount(newCartItems);
-      const newCartTotalItems = calculateTotalItems(newCartItems); // Calculate total items
+      const newCartTotalItems = calculateTotalItems(newCartItems);
       return {
         ...state,
         cartItems: newCartItems,
         cartTotal: newCartTotal,
         discount: newDiscount,
         finalTotal: calculateFinalTotal(newCartTotal, newDiscount),
-        cartTotalItems: newCartTotalItems, // Update total items
+        cartTotalItems: newCartTotalItems,
       };
     case 'REMOVE_ITEM':
       const updatedCartItems = state.cartItems.filter(
-        item => item.id !== action.payload.id,
+        item =>
+          !(
+            item.id === action.payload.id &&
+            item.unitId === action.payload.unitId
+          ),
       );
       const updatedCartTotal = calculateTotal(updatedCartItems);
-      const updatedDiscount1 = calculateDiscount(updatedCartItems);
-      const updatedCartTotalItems1 = calculateTotalItems(updatedCartItems); // Calculate total items
+      const updatedDiscount = calculateDiscount(updatedCartItems);
+      const updatedCartTotalItems = calculateTotalItems(updatedCartItems);
       return {
         ...state,
         cartItems: updatedCartItems,
         cartTotal: updatedCartTotal,
-        discount: updatedDiscount1,
-        finalTotal: calculateFinalTotal(updatedCartTotal, updatedDiscount1),
-        cartTotalItems: updatedCartTotalItems1, // Update total items
+        discount: updatedDiscount,
+        finalTotal: calculateFinalTotal(updatedCartTotal, updatedDiscount),
+        cartTotalItems: updatedCartTotalItems,
       };
     case 'UPDATE_QUANTITY':
       const updatedItems = state.cartItems.map(item =>
-        item.id === action.payload.id
+        item.id === action.payload.id && item.unitId === action.payload.unitId
           ? {...item, quantity: action.payload.quantity}
           : item,
       );
       const updatedTotal = calculateTotal(updatedItems);
-      const updatedDiscount = calculateDiscount(updatedItems);
-      const updatedCartTotalItems2 = calculateTotalItems(updatedItems); // Calculate total items
+      const updatedDiscount2 = calculateDiscount(updatedItems);
+      const updatedCartTotalItems2 = calculateTotalItems(updatedItems);
       return {
         ...state,
         cartItems: updatedItems,
         cartTotal: updatedTotal,
-        discount: updatedDiscount,
-        finalTotal: calculateFinalTotal(updatedTotal, updatedDiscount),
-        cartTotalItems: updatedCartTotalItems2, // Update total items
+        discount: updatedDiscount2,
+        finalTotal: calculateFinalTotal(updatedTotal, updatedDiscount2),
+        cartTotalItems: updatedCartTotalItems2,
       };
     default:
       return state;

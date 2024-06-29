@@ -46,7 +46,7 @@ const OrderSummaryScreen = () => {
         <View style={styles.progressBar}>
           <GroceryCartItems />
 
-          <DateTimeSlot />
+          <DateTimeSlot navigation={navigation} />
         </View>
       </ScrollView>
       <AddressModal
