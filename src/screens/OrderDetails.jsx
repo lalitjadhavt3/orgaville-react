@@ -14,12 +14,11 @@ import GroupedImages from '../components/GroupedImages';
 import api, {getImageUrl} from '../utils/api';
 import {endPoints} from '../utils/endpoints';
 import RightArrow from '../icons/RightArrow';
-import SearchIcon from '../icons/Search';
-import FilterIcon from '../icons/Filter';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 const windowHeight = Dimensions.get('window').height;
 
-const Orders = ({navigation}) => {
+const OrderDetails = ({navigation}) => {
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -42,32 +41,17 @@ const Orders = ({navigation}) => {
   );
 
   return (
-    <ScrollView style={styles.screenContainer}>
-      <View style={styles.container}>
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBarContainer}>
-            <SearchIcon width={24} height={24} />
-            <TextInput
-              style={styles.searchBar}
-              placeholder="Search Here"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-          <TouchableOpacity style={styles.filterBtn}>
-            <FilterIcon width={24} height={24} />
-            <Text style={styles.menuText}>Filters</Text>
-          </TouchableOpacity>
-        </View>
-        {/* here ends the Search container area */}
-        <View style={styles.menuContainer}>
+    <SafeAreaView>
+      <ScrollView style={styles.screenContainer}>
+        <View style={styles.container}>
+          {/* here ends the Search container area */}
           <ScrollView style={styles.ordersList}>
             {filteredOrders.map(order => (
               <TouchableOpacity
                 key={order.order_id}
                 style={styles.menuItem}
                 onPress={() => {
-                  navigation.navigate('OrderDetails');
+                  // handle navigation or any action
                 }}>
                 <GroupedImages
                   src={[getImageUrl(order.products[0].product_image)]}
@@ -91,8 +75,8 @@ const Orders = ({navigation}) => {
             ))}
           </ScrollView>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -223,9 +207,8 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   container: {
-    paddingVertical: '1%',
     backgroundColor: colors.whiteColor,
-    height: windowHeight - 58,
+    height: windowHeight,
     flexDirection: 'column',
   },
   header: {
@@ -296,4 +279,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Orders;
+export default OrderDetails;

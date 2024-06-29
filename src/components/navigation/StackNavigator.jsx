@@ -13,6 +13,7 @@ import CategoriesScreen from '../../screens/Categories';
 import SubCategoriesScreen from '../../screens/SubCategoriesScreen';
 import OrderSummaryScreen from '../../screens/OrderSummary';
 import Orders from '../../screens/Orders';
+import OrderDetails from '../../screens/OrderDetails';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -43,7 +44,11 @@ const StackNavigator = () => {
             component={Cart}
             options={{headerShown: false}}
           />
-
+          <Stack.Screen
+            name="OrderDetails"
+            component={OrderDetails}
+            options={{headerShown: true}}
+          />
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}

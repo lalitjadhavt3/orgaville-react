@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
   moreImg: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 30, // Adjust this percentage to create space between items
+    width: 27, // Adjust this percentage to create space between items
     margin: '1.5%', // Adjust this percentage to create space between items
-    height: 30,
+    height: 27,
     border: 1,
     borderWidth: 0.7,
     borderColor: 'grey',
