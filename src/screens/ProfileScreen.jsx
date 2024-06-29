@@ -30,7 +30,11 @@ const ProfileScreen = ({navigation}) => {
       </View>
       <View style={styles.container}>
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              navigation.navigate('Orders');
+            }}>
             <Image source={require('../icons/cart.png')} />
             <View style={styles.menuItemTextContainer}>
               <Text style={styles.menuText}>Orders </Text>

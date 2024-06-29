@@ -12,6 +12,7 @@ import ProfileScreen from '../../screens/ProfileScreen';
 import CategoriesScreen from '../../screens/Categories';
 import SubCategoriesScreen from '../../screens/SubCategoriesScreen';
 import OrderSummaryScreen from '../../screens/OrderSummary';
+import Orders from '../../screens/Orders';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -46,6 +47,11 @@ const StackNavigator = () => {
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="Orders"
+            component={Orders}
             options={{headerShown: true}}
           />
           <Stack.Screen
