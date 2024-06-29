@@ -16,6 +16,8 @@ import Orders from '../../screens/Orders';
 import OrderDetails from '../../screens/OrderDetails';
 import PaymentScreen from '../../screens/PaymentScreen';
 import OrderSuccessScreen from '../../screens/OrderSuccess';
+import PaymentScreen from '../../screens/PaymentScreen';
+import OrderSuccessScreen from '../../screens/OrderSuccess';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
