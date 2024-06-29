@@ -12,8 +12,8 @@ import ProfileScreen from '../../screens/ProfileScreen';
 import CategoriesScreen from '../../screens/Categories';
 import SubCategoriesScreen from '../../screens/SubCategoriesScreen';
 import OrderSummaryScreen from '../../screens/OrderSummary';
-import Orders from '../../screens/Orders';
-import OrderDetails from '../../screens/OrderDetails';
+import PaymentScreen from '../../screens/PaymentScreen';
+import OrderSuccessScreen from '../../screens/OrderSuccess';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -44,20 +44,21 @@ const StackNavigator = () => {
             component={Cart}
             options={{headerShown: false}}
           />
-          <Stack.Screen
-            name="OrderDetails"
-            component={OrderDetails}
-            options={{headerShown: true}}
-          />
+
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
             options={{headerShown: true}}
           />
           <Stack.Screen
-            name="Orders"
-            component={Orders}
-            options={{headerShown: true}}
+            name="Payment"
+            component={PaymentScreen}
+            options={{headerShown: true, headerTitle: 'Payment'}}
+          />
+          <Stack.Screen
+            name="OrderSuccess"
+            component={OrderSuccessScreen}
+            options={{headerShown: false}}
           />
           <Stack.Screen
             name="subCategory"

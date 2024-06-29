@@ -3,6 +3,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {MicOn} from '../icons';
 import {colors} from '../utils/constants';
+import CheckmarkIcon from '../icons/CheckMarkIcon';
 
 const ProgressStepper = ({currentStep}) => {
   const steps = [
@@ -23,7 +24,7 @@ const ProgressStepper = ({currentStep}) => {
                 currentStep > step.step && styles.completedCircle,
               ]}>
               {currentStep > step.step ? (
-                <MicOn name="check" size={20} color="#fff" />
+                <CheckmarkIcon size={20} color="#fff" />
               ) : (
                 <Text
                   style={[
