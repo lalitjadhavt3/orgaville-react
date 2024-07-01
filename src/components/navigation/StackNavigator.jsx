@@ -14,6 +14,9 @@ import SubCategoriesScreen from '../../screens/SubCategoriesScreen';
 import OrderSummaryScreen from '../../screens/OrderSummary';
 import PaymentScreen from '../../screens/PaymentScreen';
 import OrderSuccessScreen from '../../screens/OrderSuccess';
+import Orders from '../../screens/Orders';
+import OrderDetails from '../../screens/OrderDetails';
+import ViewProducts from '../../screens/ViewProducts';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -38,6 +41,21 @@ const StackNavigator = () => {
             name="Main"
             component={BottomTabNavigator}
             options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Orders"
+            component={Orders}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="OrderDetails"
+            component={OrderDetails}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="ViewProducts"
+            component={ViewProducts}
+            options={{headerShown: true}}
           />
           <Stack.Screen
             name="Cart"

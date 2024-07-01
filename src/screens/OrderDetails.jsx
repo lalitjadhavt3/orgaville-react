@@ -13,8 +13,11 @@ import {colors} from '../utils/constants';
 import GroupedImages from '../components/GroupedImages';
 import api, {getImageUrl} from '../utils/api';
 import {endPoints} from '../utils/endpoints';
+import DownloadIcon from '../icons/DownloadIcon';
 import RightArrow from '../icons/RightArrow';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import GroceryCartItems from '../components/GroceryCartItems';
+import OrderTracker from '../components/OrderTracker';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -53,9 +56,25 @@ const OrderDetails = ({navigation}) => {
           {/* the main heading starts */}
           <View style={styles.headingRow}>
             <Text style={styles.headingMain}>Total 1 Items</Text>
-            <TouchableOpacity style={styles.viewallBtn}>
+            <TouchableOpacity
+              style={styles.viewallBtn}
+              onPress={() => {
+                navigation.navigate('ViewProducts');
+              }}>
               <Text style={styles.viewBtnText}>View All</Text>
             </TouchableOpacity>
+          </View>
+          <GroceryCartItems showText={false} />
+          <Text style={styles.priceHeading}>Rs.1000</Text>
+          <View style={styles.invoiceView}>
+            <Text style={styles.invoiceHeading}>Invoice</Text>
+            <TouchableOpacity style={styles.downloadBtn}>
+              <DownloadIcon height={30} width={30} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.statusView}>
+            <Text style={styles.statusText}>Status</Text>
+            <OrderTracker status="Shipped" />
           </View>
         </View>
       </View>
@@ -64,6 +83,55 @@ const OrderDetails = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  statusView: {
+    marginTop: '3%',
+    marginLeft: '2%',
+    borderBottomWidth: 1,
+    borderColor: colors.lightBorderColor,
+  },
+  statusText: {
+    fontSize: 20,
+    marginTop: '5%',
+    alignSelf: 'flex-start',
+    fontWeight: 'bold',
+    color: colors.inactiveColor,
+    marginLeft: '3%',
+  },
+  downloadBtn: {
+    width: 50,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.tertiaryColor,
+    borderRadius: 6,
+    marginRight: '3%',
+  },
+  invoiceHeading: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    color: colors.tertiaryColor,
+  },
+  invoiceView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 60,
+    marginTop: '6%',
+    marginLeft: '4%',
+    marginRight: '4%',
+    borderTopWidth: 0.9,
+    borderBottomWidth: 0.9,
+    borderColor: colors.lightBorderColor,
+    justifyContent: 'space-between',
+  },
+  priceHeading: {
+    fontSize: 20,
+    marginLeft: '4%',
+    fontWeight: '800',
+    color: 'black',
+    marginTop: '5%',
+  },
   viewBtnText: {
     fontSize: 15,
     fontWeight: '800',
@@ -89,6 +157,7 @@ const styles = StyleSheet.create({
     marginTop: '3%',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: '4%',
   },
   mainContent: {
     margin: '2%',
