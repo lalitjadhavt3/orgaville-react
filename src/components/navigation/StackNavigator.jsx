@@ -17,6 +17,7 @@ import OrderSuccessScreen from '../../screens/OrderSuccess';
 import Orders from '../../screens/Orders';
 import OrderDetails from '../../screens/OrderDetails';
 import ViewProducts from '../../screens/ViewProducts';
+import ProductDetails from '../../screens/ProductDetails';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -55,6 +56,11 @@ const StackNavigator = () => {
           <Stack.Screen
             name="ViewProducts"
             component={ViewProducts}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="ProductDetails"
+            component={ProductDetails}
             options={{headerShown: true}}
           />
           <Stack.Screen

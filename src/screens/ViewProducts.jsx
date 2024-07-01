@@ -46,7 +46,12 @@ const ViewProducts = ({navigation}) => {
         <View style={styles.menuContainer}>
           <ScrollView style={styles.ordersList}>
             {filteredOrders.map(order => (
-              <View key={order.order_id} style={styles.menuItemContainer}>
+              <TouchableOpacity
+                key={order.order_id}
+                onPress={() => {
+                  navigation.navigate('ProductDetails');
+                }}
+                style={styles.menuItemContainer}>
                 <View style={styles.menuItem}>
                   <GroupedImages
                     src={[getImageUrl(order.products[0].product_image)]}
@@ -65,7 +70,7 @@ const ViewProducts = ({navigation}) => {
                   </View>
                 </View>
                 <Text style={styles.lastText}>Delivery Charges rs 10</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
