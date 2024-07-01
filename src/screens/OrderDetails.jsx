@@ -13,8 +13,11 @@ import {colors} from '../utils/constants';
 import GroupedImages from '../components/GroupedImages';
 import api, {getImageUrl} from '../utils/api';
 import {endPoints} from '../utils/endpoints';
+import DownloadIcon from '../icons/DownloadIcon';
 import RightArrow from '../icons/RightArrow';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import GroceryCartItems from '../components/GroceryCartItems';
+import OrderTracker from '../components/OrderTracker';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -41,115 +44,140 @@ const OrderDetails = ({navigation}) => {
   );
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.screenContainer}>
-        <View style={styles.container}>
-          {/* here ends the Search container area */}
-          <ScrollView style={styles.ordersList}>
-            {filteredOrders.map(order => (
-              <TouchableOpacity
-                key={order.order_id}
-                style={styles.menuItem}
-                onPress={() => {
-                  // handle navigation or any action
-                }}>
-                <GroupedImages
-                  src={[getImageUrl(order.products[0].product_image)]}
-                  totalImages={order?.payment_details?.total_items}
-                />
-                <View style={styles.menuItemTextContainer}>
-                  <View style={styles.detailsText}>
-                    <Text style={styles.orderTitle}>
-                      {order.products[0].product_name}
-                    </Text>
-                    <Text style={styles.orderDesc}>
-                      {order.products[0].short_description}
-                    </Text>
-                    <Text style={styles.orderDate}>
-                      Ordered On {order.delivery_details.date}
-                    </Text>
-                  </View>
-                  <RightArrow width={24} height={24} />
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+    <ScrollView style={styles.container}>
+      <View style={styles.mainContainer}>
+        {/* order id container starts */}
+        <View style={styles.orderIdContainer}>
+          <Text style={styles.orderIdText}>
+            <Text style={{fontWeight: 'bold'}}>Order ID :</Text> 204945055960
+          </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        <View style={styles.mainContent}>
+          {/* the main heading starts */}
+          <View style={styles.headingRow}>
+            <Text style={styles.headingMain}>Total 1 Items</Text>
+            <TouchableOpacity
+              style={styles.viewallBtn}
+              onPress={() => {
+                navigation.navigate('ViewProducts');
+              }}>
+              <Text style={styles.viewBtnText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          <GroceryCartItems showText={false} />
+          <Text style={styles.priceHeading}>Rs.1000</Text>
+          <View style={styles.invoiceView}>
+            <Text style={styles.invoiceHeading}>Invoice</Text>
+            <TouchableOpacity style={styles.downloadBtn}>
+              <DownloadIcon height={30} width={30} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.statusView}>
+            <Text style={styles.statusText}>Status</Text>
+            <OrderTracker status="Shipped" />
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  orderImgItem: {
-    width: 27,
-    margin: '2%',
-    height: 27,
-    backgroundColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
+  statusView: {
+    marginTop: '3%',
+    marginLeft: '2%',
+    borderBottomWidth: 1,
+    borderColor: colors.lightBorderColor,
   },
-  orderImg: {
-    width: '17%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ordersList: {marginBottom: '10%'},
-  orderTitle: {
-    width: '100%',
+  statusText: {
     fontSize: 20,
-    color: 'black',
+    marginTop: '5%',
+    alignSelf: 'flex-start',
+    fontWeight: 'bold',
+    color: colors.inactiveColor,
+    marginLeft: '3%',
   },
-  orderDesc: {
-    fontSize: 15,
-  },
-  orderDate: {
-    fontSize: 12,
-  },
-  detailsText: {
-    flexDirection: 'column',
-    marginLeft: '5%',
-    marginRight: '5%',
-    width: '80%',
+  downloadBtn: {
+    width: 50,
+    height: 40,
     justifyContent: 'center',
-    paddingLeft: '2%',
-    paddingRight: '2%',
-    height: 80,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.tertiaryColor,
+    borderRadius: 6,
+    marginRight: '3%',
   },
-  filterBtn: {
+  invoiceHeading: {
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    color: colors.tertiaryColor,
+  },
+  invoiceView: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
-    height: 50,
-    width: '17%',
-    marginRight: '4%',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignContent: 'center',
     height: 60,
-    width: '100%',
+    marginTop: '6%',
+    marginLeft: '4%',
+    marginRight: '4%',
+    borderTopWidth: 0.9,
+    borderBottomWidth: 0.9,
+    borderColor: colors.lightBorderColor,
     justifyContent: 'space-between',
   },
-  searchBar: {
-    width: '82%',
-    height: 100,
-  },
-  searchBarContainer: {
-    width: '70%',
-    height: 50,
-    borderRadius: 10,
-    borderColor: 'grey',
-    borderWidth: 0.7,
+  priceHeading: {
+    fontSize: 20,
     marginLeft: '4%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
+    fontWeight: '800',
+    color: 'black',
+    marginTop: '5%',
   },
-  btnStyle: {},
-  screenContainer: {},
+  viewBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.primaryColor,
+  },
+  viewallBtn: {
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    marginRight: '3%',
+    borderWidth: 0.7,
+    borderColor: 'grey',
+    borderRadius: 5,
+  },
+  headingMain: {
+    marginLeft: '3%',
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  headingRow: {
+    marginTop: '3%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: '4%',
+  },
+  mainContent: {
+    margin: '2%',
+  },
+  orderIdContainer: {
+    height: 40,
+    borderColor: 'grey',
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    justifyContent: 'center',
+  },
+  mainContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    height: '100%',
+    width: '100%',
+  },
+  orderIdText: {
+    marginLeft: '4%',
+  },
   avatarsDefaultWithBackdropParent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -179,103 +207,10 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 199,
   },
-  menuItemTextContainer: {
-    width: '85%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  menuContainer: {
-    width: '100%',
-    paddingBottom: '4%',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    paddingHorizontal: '5%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 120,
-    width: '100%',
-    borderTopColor: 'lightgrey',
-    borderBottomColor: 'lightgrey',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
-  },
-  menuText: {
-    marginLeft: 10,
-    fontSize: 18,
-    color: 'black',
-  },
   container: {
     backgroundColor: colors.whiteColor,
     height: windowHeight,
     flexDirection: 'column',
-  },
-  header: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  subTitle: {
-    fontSize: 16,
-    marginTop: 5,
-  },
-  description: {
-    fontSize: 14,
-    marginTop: 5,
-    color: '#888',
-  },
-  form: {
-    flex: 4,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  textInput: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ceefeb',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    marginTop: '5%',
-  },
-  forgotPassword: {
-    fontSize: 14,
-    marginTop: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-end',
-  },
-  button: {
-    height: 40,
-    backgroundColor: colors.backgroundColor,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonLabel: {
-    color: colors.whiteColor,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  newAccount: {
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  orLoginWith: {
-    fontSize: 14,
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  socialLogin: {
-    justifyContent: 'center',
-    marginTop: 10,
   },
 });
 

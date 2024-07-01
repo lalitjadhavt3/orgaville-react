@@ -2,12 +2,15 @@ import React, {useContext} from 'react';
 import {View, StyleSheet, ScrollView, Image, Text} from 'react-native';
 import {CartContext} from '../context/Context';
 
-const GroceryCartItems = () => {
+const GroceryCartItems = props => {
   const {state, dispatch} = useContext(CartContext);
   return (
     <View style={styles.titleContainer}>
-      <Text style={styles.title}>Cart Items</Text>
-
+      {props.showText == false ? (
+        <></>
+      ) : (
+        <Text style={styles.title}>Cart Items</Text>
+      )}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -37,6 +40,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     marginBottom: 8,
+    marginTop: 5,
   },
   title: {
     fontSize: 16,

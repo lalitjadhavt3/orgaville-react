@@ -1,13 +1,12 @@
+// ViewProducts.js
 import React, {useLayoutEffect, useState} from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   ScrollView,
   Dimensions,
   TouchableOpacity,
-  TextInput,
 } from 'react-native';
 import {colors} from '../utils/constants';
 import GroupedImages from '../components/GroupedImages';
@@ -18,7 +17,7 @@ import SearchContainer from '../components/searchContainer';
 
 const windowHeight = Dimensions.get('window').height;
 
-const Orders = ({navigation}) => {
+const ViewProducts = ({navigation}) => {
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -43,39 +42,34 @@ const Orders = ({navigation}) => {
   return (
     <ScrollView style={styles.screenContainer}>
       <View style={styles.container}>
-        <SearchContainer
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          showFilter={true}
-        />
         {/* here ends the Search container area */}
         <View style={styles.menuContainer}>
           <ScrollView style={styles.ordersList}>
             {filteredOrders.map(order => (
               <TouchableOpacity
                 key={order.order_id}
-                style={styles.menuItem}
                 onPress={() => {
-                  navigation.navigate('OrderDetails');
-                }}>
-                <GroupedImages
-                  src={[getImageUrl(order.products[0].product_image)]}
-                  totalImages={order?.payment_details?.total_items}
-                />
-                <View style={styles.menuItemTextContainer}>
-                  <View style={styles.detailsText}>
-                    <Text style={styles.orderTitle}>
-                      {order.products[0].product_name}
-                    </Text>
-                    <Text style={styles.orderDesc}>
-                      {order.products[0].short_description}
-                    </Text>
-                    <Text style={styles.orderDate}>
-                      Ordered On {order.delivery_details.date}
-                    </Text>
+                  navigation.navigate('ProductDetails');
+                }}
+                style={styles.menuItemContainer}>
+                <View style={styles.menuItem}>
+                  <GroupedImages
+                    src={[getImageUrl(order.products[0].product_image)]}
+                    totalImages={order?.payment_details?.total_items}
+                  />
+                  <View style={styles.menuItemTextContainer}>
+                    <View style={styles.detailsText}>
+                      <Text style={styles.orderTitle}>
+                        {order.products[0].product_name}
+                      </Text>
+                      <Text style={styles.orderDesc}>
+                        {order.products[0].item_quantity} Quantity
+                      </Text>
+                      <Text style={styles.orderDate}>Rs 100</Text>
+                    </View>
                   </View>
-                  <RightArrow width={24} height={24} />
                 </View>
+                <Text style={styles.lastText}>Delivery Charges rs 10</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -86,6 +80,13 @@ const Orders = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  lastText: {
+    marginLeft: '4%',
+    marginBottom: '2%',
+    fontWeight: '600',
+    color: 'black',
+  },
+  screenContainer: {height: windowHeight},
   orderImgItem: {
     width: 27,
     margin: '2%',
@@ -117,72 +118,11 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginLeft: '5%',
     marginRight: '5%',
-    width: '80%',
+    width: '90%',
     justifyContent: 'center',
     paddingLeft: '2%',
     paddingRight: '2%',
     height: 80,
-  },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    height: 50,
-    width: '17%',
-    marginRight: '4%',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignContent: 'center',
-    height: 60,
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-  searchBar: {
-    width: '82%',
-    height: 100,
-  },
-  searchBarContainer: {
-    width: '70%',
-    height: 50,
-    borderRadius: 10,
-    borderColor: 'grey',
-    borderWidth: 0.7,
-    marginLeft: '4%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-  },
-  btnStyle: {},
-  screenContainer: {},
-  avatarsDefaultWithBackdropParent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: '5%',
-  },
-  avatarsDefaultWithBackdrop: {
-    width: 60,
-    height: 60,
-  },
-  userGreet: {
-    marginLeft: '5%',
-    fontSize: 20,
-    fontFamily: 'Poppins-Medium',
-    color: 'black',
-    fontWeight: 'bold',
-  },
-  userEmail: {fontSize: 15, marginLeft: '5%'},
-  iconlyWrapper: {
-    padding: 3,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-  },
-  header: {
-    height: 100,
-    backgroundColor: 'red',
-    flex: 1,
-    zIndex: 199,
   },
   menuItemTextContainer: {
     width: '85%',
@@ -192,19 +132,22 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     width: '100%',
-    paddingBottom: '4%',
+    height: windowHeight - 40,
+  },
+  menuItemContainer: {
+    borderTopColor: colors.lightBorderColor,
+    borderBottomColor: colors.lightBorderColor,
+    borderBottomWidth: 0.6,
+    borderTopWidth: 0.6,
+    flexDirection: 'column',
   },
   menuItem: {
     flexDirection: 'row',
     paddingHorizontal: '5%',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 120,
+    height: 110,
     width: '100%',
-    borderTopColor: 'lightgrey',
-    borderBottomColor: 'lightgrey',
-    borderBottomWidth: 1,
-    borderTopWidth: 1,
   },
   menuText: {
     marginLeft: 10,
@@ -212,9 +155,8 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   container: {
-    paddingVertical: '1%',
     backgroundColor: colors.whiteColor,
-    height: windowHeight,
+    height: windowHeight - 80,
     flexDirection: 'column',
   },
   header: {
@@ -285,4 +227,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Orders;
+export default ViewProducts;
