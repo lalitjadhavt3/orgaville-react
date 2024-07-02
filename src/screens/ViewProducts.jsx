@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'black',
   },
-  screenContainer: {height: windowHeight},
+  screenContainer: {},
   orderImgItem: {
     width: 27,
     margin: '2%',
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  ordersList: {marginBottom: '10%'},
+  ordersList: {},
   orderTitle: {
     width: '100%',
     fontSize: 20,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     width: '100%',
-    height: windowHeight - 40,
+    height: '100%',
   },
   menuItemContainer: {
     borderTopColor: colors.lightBorderColor,
@@ -156,8 +156,9 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: colors.whiteColor,
-    height: windowHeight - 80,
+    height: '100%',
     flexDirection: 'column',
+    marginBottom: 0,
   },
   header: {
     flex: 1,

@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  ordersList: {marginBottom: '10%'},
+  ordersList: {},
   orderTitle: {
     width: '100%',
     fontSize: 20,
@@ -212,10 +212,11 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   container: {
-    paddingVertical: '1%',
     backgroundColor: colors.whiteColor,
-    height: windowHeight,
+    height: '100%',
     flexDirection: 'column',
+    marginBottom: 0,
+    paddingBottom: 0,
   },
   header: {
     flex: 1,
