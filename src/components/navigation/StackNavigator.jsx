@@ -18,6 +18,9 @@ import Orders from '../../screens/Orders';
 import OrderDetails from '../../screens/OrderDetails';
 import ViewProducts from '../../screens/ViewProducts';
 import ProductDetails from '../../screens/ProductDetails';
+import Address from '../../screens/Address';
+import AddDeliveryAddress from '../../screens/AddDeliveryAddress';
+import EditAddress from '../../screens/EditAddress';
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
@@ -46,6 +49,21 @@ const StackNavigator = () => {
           <Stack.Screen
             name="Orders"
             component={Orders}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="Address"
+            component={Address}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="AddAddress"
+            component={AddDeliveryAddress}
+            options={{headerShown: true}}
+          />
+          <Stack.Screen
+            name="EditAddress"
+            component={EditAddress}
             options={{headerShown: true}}
           />
           <Stack.Screen
