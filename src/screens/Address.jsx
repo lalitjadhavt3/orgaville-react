@@ -18,36 +18,65 @@ import ThreeDotMoreOptions from '../icons/ThreeDot';
 const windowHeight = Dimensions.get('window').height;
 
 const Address = ({navigation}) => {
-  const [orders, setOrders] = useState([]);
+  const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [optionsVisible, setOptionsVisible] = useState(false);
-
   const optionsBoxRef = useRef(null);
 
   useLayoutEffect(() => {
     const data = {
       platform: 'android',
       user_id: 13,
-      no_of_records: 10,
-      page_number: 1,
     };
-    api.post(endPoints.ORDERS, data).then(response => {
-      setOrders(response?.data?.data);
+    api.post(endPoints.GET_ADDRESS, data).then(response => {
+      setAddresses(response?.data?.data);
     });
   }, []);
 
-  const handleEdit = () => {
+  const fetchAddresses = () => {
+    const data = {
+      platform: 'android',
+      user_id: 13,
+    };
+    api.post(endPoints.GET_ADDRESS, data).then(response => {
+      setAddresses(response?.data?.data);
+    });
+  };
+  const handleEdit = address => {
     setOptionsVisible(false);
-    navigation.navigate('EditAddress');
+    navigation.navigate('EditAddress', {
+      address,
+      onAddressUpdated: fetchAddresses,
+    });
   };
 
-  const handleRemove = () => {
+  const handleRemove = address_id => {
     setOptionsVisible(false);
     Alert.alert('Remove', 'Are You Sure?', [
       {
         text: 'Yes',
         onPress: () => {
-          Alert.alert('Done', 'Address Removed!');
+          api
+            .post(endPoints.DELETE_ADDRESS, {
+              platform: 'android',
+              user_id: 13,
+              user_address_id: address_id,
+            })
+            .then(() => {
+              Alert.alert('Removed', 'Address Removed Successfully!', [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    // Update the addresses state variable
+                    setAddresses(prevAddresses =>
+                      prevAddresses.filter(
+                        address => address.id !== address_id,
+                      ),
+                    );
+                  },
+                },
+              ]);
+            });
         },
       },
       {text: 'No'},
@@ -76,338 +105,61 @@ const Address = ({navigation}) => {
       <SafeAreaView style={{backgroundColor: '#e8e8e8', height: windowHeight}}>
         <TouchableOpacity
           style={styles.addAddressBtn}
-          onPress={() => navigation.navigate('AddAddress')}>
+          onPress={() =>
+            navigation.navigate('AddAddress', {
+              onAddressAdded: fetchAddresses,
+            })
+          }>
           <Text style={styles.addBtnText}>+ Add New Address</Text>
         </TouchableOpacity>
         <View style={styles.screenContainer}>
           <View style={styles.container}>
-            <Text style={styles.label1}>3 SAVED ADDRESSES</Text>
+            <Text style={styles.label1}>
+              {addresses.length} SAVED ADDRESSES
+            </Text>
             <View style={styles.addressList}>
               <ScrollView>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
+                {addresses.map(address => (
+                  <View key={address.id} style={styles.addressListItem}>
+                    <View style={styles.introView}>
+                      <View style={styles.headingView}>
+                        <Text style={styles.nameText}>{address.name}</Text>
+                        <View style={styles.addressType}>
+                          <Text>{address.is_primary ? 'PRIMARY' : 'HOME'}</Text>
+                        </View>
                       </View>
+                      <TouchableOpacity
+                        style={styles.menuBtn}
+                        onPress={() => toggleOptions(address.id)}>
+                        <ThreeDotMoreOptions height={25} width={25} />
+                      </TouchableOpacity>
+                      {selectedAddress === address.id && optionsVisible && (
+                        <View ref={optionsBoxRef} style={styles.optionsBox}>
+                          <TouchableOpacity
+                            style={styles.option}
+                            onPress={() => handleEdit(address)}>
+                            <Text style={styles.optionText}>Edit</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.option}
+                            onPress={() => handleRemove(address?.id)}>
+                            <Text style={styles.optionText}>Remove</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
                     </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
+                    <View style={styles.addressTextView}>
+                      <Text style={styles.addressText}>
+                        {address.address}, {address.landmark}, {address.area},{' '}
+                        {address.city_name}, {address.state_name} -{' '}
+                        {address.pin_code}
+                      </Text>
+                    </View>
+                    <Text style={styles.mobileNumber}>
+                      {address.mobile_number}
                     </Text>
                   </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
-                <View style={styles.addressListItem}>
-                  <View style={styles.introView}>
-                    <View style={styles.headingView}>
-                      <Text style={styles.nameText}>Bhushan Rokade</Text>
-                      <View style={styles.addressType}>
-                        <Text>HOME</Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.menuBtn}
-                      onPress={() => toggleOptions('Bhushan Rokade')}>
-                      <ThreeDotMoreOptions height={25} width={25} />
-                    </TouchableOpacity>
-                    {selectedAddress === 'Bhushan Rokade' && optionsVisible && (
-                      <View ref={optionsBoxRef} style={styles.optionsBox}>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleEdit}>
-                          <Text style={styles.optionText}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.option}
-                          onPress={handleRemove}>
-                          <Text style={styles.optionText}>Remove</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.addressTextView}>
-                    <Text style={styles.addressText}>
-                      Plot No.50,Sector No.499,Rajya Karmachari Society
-                      ,Ashoknagar,Satpur, Nashik, Maharashtra
-                    </Text>
-                  </View>
-                  <Text style={styles.mobileNumber}>9370457964</Text>
-                </View>
+                ))}
               </ScrollView>
             </View>
           </View>
@@ -469,7 +221,7 @@ const styles = StyleSheet.create({
     maxHeight: windowHeight * 0.2,
     marginVertical: '2%',
   },
-  adressList: {
+  addressList: {
     height: windowHeight * 0.8,
   },
   label1: {
@@ -484,7 +236,6 @@ const styles = StyleSheet.create({
     color: colors.primaryColor,
     fontWeight: '900',
     fontSize: 16,
-
     marginLeft: '5%',
   },
   addAddressBtn: {

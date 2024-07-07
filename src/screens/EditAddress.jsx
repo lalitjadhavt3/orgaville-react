@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useLayoutEffect, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -6,51 +6,218 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import SelectDropdown from 'react-native-select-dropdown';
 import {colors} from '../utils/constants';
 import {Home} from '../icons';
 import BagIcon from '../icons/BagIcon';
+import {endPoints} from '../utils/endpoints';
+import api from '../utils/api';
 
-const EditAddress = () => {
-  const [addressType, setAddressType] = useState('Home');
+const EditAddress = ({route, navigation}) => {
+  const address = route.params.address;
+  const onAddressUpdated = route.params.onAddressUpdated;
+  const [pinCodes, setPinCodes] = useState([]);
+  const [filteredPinCodes, setFilteredPinCodes] = useState([]);
+  const [addressType, setAddressType] = useState(
+    address.is_primary ? 'Work' : 'Home',
+  );
+  const [name, setName] = useState(address.name);
+  const [phoneNumber, setPhoneNumber] = useState(address.mobile_number);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedState, setSelectedState] = useState(address.state_id);
+  const [selectedCity, setSelectedCity] = useState(address.city_id);
+  const [pincode, setPincode] = useState(address.pin_code);
+  const [selectedPincode, setSelectedPincode] = useState(null);
+  const [houseNumber, setHouseNumber] = useState(address.address);
+  const [area, setArea] = useState(address.area);
+
+  const pincodeDropdownRef = useRef();
+
+  useLayoutEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = {
+          platform: 'android',
+        };
+        const pincodeResponse = await api.post(endPoints.GET_PINCODES, data);
+        const pincodes = pincodeResponse?.data?.data || [];
+        setPinCodes(pincodes);
+        setFilteredPinCodes(pincodes);
+
+        const stateResponse = await api.post(
+          'https://orgaville.com/latest_apis/get_state.php',
+        );
+        setStates(stateResponse?.data?.data || []);
+
+        const cityResponse = await api.post(
+          'https://orgaville.com/latest_apis/get_cities.php',
+        );
+        setCities(cityResponse?.data?.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'Failed to fetch data. Please try again.');
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (pinCodes.length > 0) {
+      const defaultPincode = pinCodes.find(pc => pc.pc === address.pin_code);
+      if (defaultPincode) {
+        setSelectedPincode(defaultPincode);
+        setPincode(defaultPincode.pc);
+      }
+    }
+  }, [pinCodes, address.pin_code]);
+
+  const handleUpdateAddress = () => {
+    if (
+      !name ||
+      !phoneNumber ||
+      !selectedState ||
+      !selectedCity ||
+      !pincode ||
+      !houseNumber ||
+      !area
+    ) {
+      Alert.alert('Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    const addressData = {
+      user_id: address.user_id,
+      user_address_id: address.id,
+      name,
+      address: houseNumber,
+      pin_code: pincode,
+      area,
+      city_id: selectedCity,
+      state_id: selectedState,
+      mobile_number: phoneNumber,
+      address_type: addressType,
+    };
+
+    api
+      .post(endPoints.UPDATE_ADDRESS, addressData)
+      .then(() => {
+        Alert.alert('Successful', 'Address Updated Successfully');
+        onAddressUpdated();
+        navigation.goBack();
+      })
+      .catch(error => {
+        console.error('Error updating address:', error);
+        Alert.alert('Error', 'Failed to update address. Please try again.');
+      });
+  };
+
+  const handlePincodeSearch = text => {
+    if (text.length > 0) {
+      const filtered = pinCodes.filter(item => item.pc.startsWith(text));
+      setFilteredPinCodes(filtered);
+      if (filtered.length === 0) {
+        Alert.alert(
+          'Pincode Not Available',
+          'The entered pincode is not available.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                pincodeDropdownRef.current?.reset();
+                setFilteredPinCodes(pinCodes);
+              },
+            },
+          ],
+        );
+      }
+    } else {
+      setFilteredPinCodes(pinCodes);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.form}>
-        <TextInput style={styles.input} placeholder="Full Name (Required) *" />
+        <TextInput
+          style={styles.input}
+          placeholder="Full Name (Required) *"
+          value={name}
+          onChangeText={setName}
+        />
         <TextInput
           style={styles.input}
           placeholder="Phone number (Required) *"
           keyboardType="phone-pad"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
         />
 
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, {width: '100%'}]}
-            placeholder="State (Required) *"
-          />
-        </View>
+        <SelectDropdown
+          data={states}
+          onSelect={selectedItem => setSelectedState(selectedItem.id)}
+          buttonTextAfterSelection={selectedItem => selectedItem.name}
+          rowTextForSelection={item => item.name}
+          defaultButtonText="Select State"
+          buttonStyle={styles.dropdownButton}
+          buttonTextStyle={styles.dropdownButtonText}
+          dropdownStyle={styles.dropdown}
+          rowStyle={styles.dropdownRow}
+          rowTextStyle={styles.dropdownRowText}
+          defaultValue={states.find(state => state.id == address.state_id)}
+        />
 
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, styles.halfWidth]}
-            placeholder="City (Required) *"
-          />
-          <TextInput
-            style={[styles.input, styles.halfWidth]}
-            placeholder="Pincode (Required) *"
-            keyboardType="numeric"
-          />
-        </View>
+        <SelectDropdown
+          data={cities}
+          onSelect={selectedItem => setSelectedCity(selectedItem.id)}
+          buttonTextAfterSelection={selectedItem => selectedItem.name}
+          rowTextForSelection={item => item.name}
+          defaultButtonText="Select City"
+          buttonStyle={styles.dropdownButton}
+          buttonTextStyle={styles.dropdownButtonText}
+          dropdownStyle={styles.dropdown}
+          rowStyle={styles.dropdownRow}
+          rowTextStyle={styles.dropdownRowText}
+          defaultValue={cities.find(city => city.id == address.city_id)}
+        />
+
+        <SelectDropdown
+          ref={pincodeDropdownRef}
+          data={filteredPinCodes}
+          onSelect={selectedItem => {
+            setSelectedPincode(selectedItem);
+            setPincode(selectedItem.pc);
+          }}
+          defaultButtonText="Select Pincode"
+          buttonTextAfterSelection={selectedItem => selectedItem.pc}
+          rowTextForSelection={item => item.pc}
+          buttonStyle={styles.dropdownButton}
+          buttonTextStyle={styles.dropdownButtonText}
+          dropdownStyle={styles.dropdown}
+          rowStyle={styles.dropdownRow}
+          rowTextStyle={styles.dropdownRowText}
+          search
+          searchPlaceHolder="Search Pincode"
+          searchInputStyle={styles.searchInput}
+          searchInputTxtColor="#333"
+          onChangeSearchInputText={handlePincodeSearch}
+        />
 
         <TextInput
           style={styles.input}
           placeholder="House No., Building Name (Required) *"
+          value={houseNumber}
+          onChangeText={setHouseNumber}
         />
         <TextInput
           style={styles.input}
           placeholder="Road name, Area, Colony (Required) *"
+          value={area}
+          onChangeText={setArea}
         />
 
         <Text style={styles.label}>Type of address</Text>
@@ -87,8 +254,10 @@ const EditAddress = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save Address</Text>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleUpdateAddress}>
+          <Text style={styles.saveButtonText}>Update Address</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -100,43 +269,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F0F0F0',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#4285F4',
-    padding: 16,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    marginRight: 16,
-  },
-  cartIconContainer: {
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
-  },
   form: {
     padding: 16,
   },
@@ -145,31 +277,41 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 12,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  link: {
-    color: colors.primaryColor,
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  halfWidth: {
-    width: '48%',
-  },
-  locationButton: {
-    backgroundColor: '#4285F4',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
+  dropdownButton: {
+    width: '100%',
+    height: 50,
+    backgroundColor: 'white',
     borderRadius: 4,
-    width: '48%',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  locationButtonText: {
-    color: 'white',
-    marginLeft: 8,
+  dropdownButtonText: {
+    fontSize: 16,
+    color: 'gray',
+  },
+  dropdown: {
+    backgroundColor: 'white',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  dropdownRow: {
+    backgroundColor: 'white',
+    borderBottomColor: '#E0E0E0',
+    borderBottomWidth: 1,
+    padding: 10,
+  },
+  dropdownRowText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  searchInput: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 4,
   },
   label: {
     fontSize: 16,
@@ -187,6 +329,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
     marginRight: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   activeAddressType: {
     borderColor: colors.primaryColor,
