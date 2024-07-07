@@ -55,7 +55,9 @@ const ProfileScreen = ({navigation}) => {
               <RightArrow width={24} height={24} />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('Address')}>
             <Image source={require('../icons/contact.png')} />
             <View style={styles.menuItemTextContainer}>
               <Text style={styles.menuText}>Address </Text>

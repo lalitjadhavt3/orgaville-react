@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 60, // Reduced from 80 to match new sticky add cart height
+    paddingBottom: '15%', // Reduced from 80 to match new sticky add cart height
   },
   container: {
     backgroundColor: colors.whiteColor,
